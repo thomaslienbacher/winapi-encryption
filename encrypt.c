@@ -3,6 +3,7 @@
 //
 
 #include "encrypt.h"
+#include "common.h"
 
 #include <tchar.h>
 #include <stdio.h>
@@ -10,30 +11,6 @@
 #include <wincrypt.h>
 #include <conio.h>
 #include <stdbool.h>
-
-#define KEYLENGTH  0x00800000
-#define ENCRYPT_ALGORITHM CALG_RC4
-#define ENCRYPT_BLOCK_SIZE 16
-
-static void MyHandleError(LPTSTR psz, int nErrorNumber) {
-    fflush(stdout);
-    _ftprintf(stderr, TEXT("An error occurred in the program. \n"));
-    _ftprintf(stderr, TEXT("%s\n"), psz);
-    _ftprintf(stderr, TEXT("Error number %x.\n"), nErrorNumber);
-    LPVOID errMsg;
-
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER
-                  | FORMAT_MESSAGE_FROM_SYSTEM
-                  | FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL,
-                  nErrorNumber,
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                  (LPTSTR) &errMsg,
-                  0,
-                  NULL);
-
-    _ftprintf(stderr, TEXT("\n** ERROR **: %s\n"), (LPTSTR) errMsg);
-}
 
 int encrypt(int argc, _TCHAR *argv[]) {
     if (argc < 3) {
@@ -128,10 +105,10 @@ bool MyEncryptFile(
     // Open the destination file.
     hDestinationFile = CreateFile(
             pszDestinationFile,
-            FILE_WRITE_DATA,
-            FILE_SHARE_READ,
+            GENERIC_WRITE,
+            0,
             NULL,
-            OPEN_ALWAYS,
+            CREATE_ALWAYS,
             FILE_ATTRIBUTE_NORMAL,
             NULL);
     if (INVALID_HANDLE_VALUE != hDestinationFile) {
@@ -323,7 +300,7 @@ bool MyEncryptFile(
         // Create a hash object.
         if (CryptCreateHash(
                 hCryptProv,
-                CALG_MD5,
+                CALG_SHA_256,
                 0,
                 0,
                 &hHash)) {

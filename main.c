@@ -8,6 +8,7 @@ int main(int argc, char *argv[]) {
     encrypt(4, a);
 
     puts("\n-\n");
+    Sleep(3000);
 
     decrypt(4, b);
     return 0;
