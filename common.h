@@ -12,22 +12,22 @@
 #include <conio.h>
 #include <stdbool.h>
 
-static void MyHandleError(LPTSTR psz, int nErrorNumber) {
+static void PrintError(LPTSTR errDesc) {
     fflush(stdout);
-    _ftprintf(stderr, TEXT("ERR: %s %x\n"), psz, nErrorNumber);
     LPVOID errMsg;
 
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER
                   | FORMAT_MESSAGE_FROM_SYSTEM
                   | FORMAT_MESSAGE_IGNORE_INSERTS,
                   NULL,
-                  nErrorNumber,
-                  MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
+                  GetLastError(),
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                   (LPTSTR) &errMsg,
                   0,
                   NULL);
 
-    _ftprintf(stderr, TEXT("\n** ERROR **: %s\n"), (LPTSTR) errMsg);
+    _ftprintf(stderr, TEXT("\n** ERROR ** %s: %s\n"), errDesc, (LPTSTR) errMsg);
+    LocalFree((LPVOID) errMsg);
 }
 
 #endif //WINAPI_ENCRYPTION_COMMON_H

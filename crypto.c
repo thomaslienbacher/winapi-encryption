@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 #include "crypto.h"
-#include "common.h"
 #include "aes.h"
 
 int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
@@ -12,8 +11,6 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
     HANDLE hSourceFile = INVALID_HANDLE_VALUE;
     HANDLE hDestinationFile = INVALID_HANDLE_VALUE;
 
-    //---------------------------------------------------------------
-    // Open the source file.
     hSourceFile = CreateFile(
             pszSourceFile,
             GENERIC_READ,
@@ -22,19 +19,11 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
             OPEN_EXISTING,
             FILE_ATTRIBUTE_NORMAL,
             NULL);
-    if (INVALID_HANDLE_VALUE != hSourceFile) {
-        _tprintf(
-                TEXT("The source plaintext file, %s, is open. \n"),
-                pszSourceFile);
-    } else {
-        MyHandleError(
-                TEXT("Error opening source plaintext file!\n"),
-                GetLastError());
-        goto Exit_MyEncryptFile;
+    if (hSourceFile == INVALID_HANDLE_VALUE) {
+        PrintError(TEXT("Error opening source plaintext file!\n"));
+        goto encrypt_exit;
     }
 
-    //---------------------------------------------------------------
-    // Open the destination file.
     hDestinationFile = CreateFile(
             pszDestinationFile,
             GENERIC_WRITE,
@@ -43,15 +32,9 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
             CREATE_ALWAYS,
             FILE_ATTRIBUTE_NORMAL,
             NULL);
-    if (INVALID_HANDLE_VALUE != hDestinationFile) {
-        _tprintf(
-                TEXT("The destination file, %s, is open. \n"),
-                pszDestinationFile);
-    } else {
-        MyHandleError(
-                TEXT("Error opening destination file!\n"),
-                GetLastError());
-        goto Exit_MyEncryptFile;
+    if (hDestinationFile == INVALID_HANDLE_VALUE) {
+        PrintError(TEXT("Error opening destination file!\n"));
+        goto encrypt_exit;
     }
 
     uint8_t *expandedKey = aes_init(sizeof(uint8_t[32]));
@@ -71,70 +54,46 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
             sizeof(fileSize.QuadPart),
             &bytesWritten,
             NULL)) {
-        MyHandleError(
-                TEXT("Error writing fileSize.\n"),
-                GetLastError());
-        goto Exit_MyEncryptFile;
+        PrintError(TEXT("Error writing fileSize\n"));
+        goto encrypt_exit;
     }
-    _tprintf("%lu : %llu\n", bytesWritten, fileSize.QuadPart);
 
-    bool fEOF = FALSE;
+    bool fEOF;
 
     do {
         memset(in, 0, BLOCK_SIZE);
         memset(out, 0, BLOCK_SIZE);
 
-        //-----------------------------------------------------------
-        // Read up to dwBlockLen bytes from the source file.
         if (!ReadFile(
                 hSourceFile,
                 in,
                 BLOCK_SIZE,
                 &bytesRead,
                 NULL)) {
-            MyHandleError(
-                    TEXT("Error reading plaintext!\n"),
-                    GetLastError());
-            goto Exit_MyEncryptFile;
+            PrintError(TEXT("Error reading plaintext!\n"));
+            goto encrypt_exit;
         }
 
         if (!bytesRead) break;
+        fEOF = bytesRead < BLOCK_SIZE;
 
-        if (bytesRead < BLOCK_SIZE) {
-            fEOF = TRUE;
-        }
-
-
-        printf("Plaintext message:\n");
-        for (int i = 0; i < 4; i++) {
-            printf("%x %x %x %x\n", in[4 * i + 0], in[4 * i + 1], in[4 * i + 2], in[4 * i + 3]);
-        }
         aes_cipher(in, out, expandedKey);
-        printf("Ciphered message:\n");
-        for (int i = 0; i < 4; i++) {
-            printf("%x %x %x %x\n", out[4 * i + 0], out[4 * i + 1], out[4 * i + 2], out[4 * i + 3]);
-        }
 
-        //-----------------------------------------------------------
-        // Write the encrypted data to the destination file.
         if (!WriteFile(
                 hDestinationFile,
                 out,
                 BLOCK_SIZE,
                 &bytesWritten,
                 NULL)) {
-            MyHandleError(
-                    TEXT("Error writing ciphertext.\n"),
-                    GetLastError());
-            goto Exit_MyEncryptFile;
+            PrintError(TEXT("Error writing ciphertext!\n"));
+            goto encrypt_exit;
         }
 
-        _tprintf("%lu => %lu\n", bytesRead, bytesWritten);
     } while (!fEOF);
 
     fReturn = true;
 
-    Exit_MyEncryptFile:
+    encrypt_exit:
 
     if (hSourceFile) {
         CloseHandle(hSourceFile);
@@ -154,8 +113,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
     HANDLE hSourceFile = INVALID_HANDLE_VALUE;
     HANDLE hDestinationFile = INVALID_HANDLE_VALUE;
 
-    //---------------------------------------------------------------
-    // Open the source file.
     hSourceFile = CreateFile(
             pszSourceFile,
             GENERIC_READ,
@@ -164,19 +121,11 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
             OPEN_EXISTING,
             FILE_ATTRIBUTE_NORMAL,
             NULL);
-    if (INVALID_HANDLE_VALUE != hSourceFile) {
-        _tprintf(
-                TEXT("The source plaintext file, %s, is open. \n"),
-                pszSourceFile);
-    } else {
-        MyHandleError(
-                TEXT("Error opening source plaintext file!\n"),
-                GetLastError());
-        goto Exit_MyEncryptFile;
+    if (hSourceFile == INVALID_HANDLE_VALUE) {
+        PrintError(TEXT("Error opening source plaintext file!\n"));
+        goto decrypt_exit;
     }
 
-    //---------------------------------------------------------------
-    // Open the destination file.
     hDestinationFile = CreateFile(
             pszDestinationFile,
             GENERIC_WRITE,
@@ -185,17 +134,10 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
             CREATE_ALWAYS,
             FILE_ATTRIBUTE_NORMAL,
             NULL);
-    if (INVALID_HANDLE_VALUE != hDestinationFile) {
-        _tprintf(
-                TEXT("The destination file, %s, is open. \n"),
-                pszDestinationFile);
-    } else {
-        MyHandleError(
-                TEXT("Error opening destination file!\n"),
-                GetLastError());
-        goto Exit_MyEncryptFile;
+    if (hDestinationFile == INVALID_HANDLE_VALUE) {
+        PrintError(TEXT("Error opening destination file!\n"));
+        goto decrypt_exit;
     }
-
 
     uint8_t *expandedKey = aes_init(sizeof(uint8_t[32]));
     aes_key_expansion(key, expandedKey);
@@ -214,74 +156,50 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]) {
             sizeof(fileSize.QuadPart),
             &bytesRead,
             NULL)) {
-        MyHandleError(
-                TEXT("Error reading fileSize.\n"),
-                GetLastError());
-        goto Exit_MyEncryptFile;
+        PrintError(TEXT("Error reading fileSize.\n"));
+        goto decrypt_exit;
     }
-    _tprintf("%lu : %llu\n", bytesRead, fileSize.QuadPart);
 
-    bool fEOF = FALSE;
+    bool fEOF;
 
     do {
         memset(in, 0, BLOCK_SIZE);
         memset(out, 0, BLOCK_SIZE);
 
-        //-----------------------------------------------------------
-        // Read up to dwBlockLen bytes from the source file.
         if (!ReadFile(
                 hSourceFile,
                 in,
                 BLOCK_SIZE,
                 &bytesRead,
                 NULL)) {
-            MyHandleError(
-                    TEXT("Error reading plaintext!\n"),
-                    GetLastError());
-            goto Exit_MyEncryptFile;
+            PrintError(TEXT("Error reading plaintext!\n"));
+            goto decrypt_exit;
         }
 
         if (!bytesRead) break;
+        fEOF = bytesRead < BLOCK_SIZE;
 
-        if (bytesRead < BLOCK_SIZE) {
-            fEOF = TRUE;
-        }
-
-        printf("Plaintext message:\n");
-        for (int i = 0; i < 4; i++) {
-            printf("%x %x %x %x\n", in[4 * i + 0], in[4 * i + 1], in[4 * i + 2], in[4 * i + 3]);
-        }
         aes_inv_cipher(in, out, expandedKey);
-        printf("Ciphered message:\n");
-        for (int i = 0; i < 4; i++) {
-            printf("%x %x %x %x\n", out[4 * i + 0], out[4 * i + 1], out[4 * i + 2], out[4 * i + 3]);
-        }
-
 
         DWORD bytesToWrite = (DWORD) (BLOCK_SIZE < fileSize.QuadPart - bytesWrittenAll ? BLOCK_SIZE :
                                       fileSize.QuadPart - bytesWrittenAll);
 
-        //-----------------------------------------------------------
-        // Write the encrypted data to the destination file.
         if (!WriteFile(
                 hDestinationFile,
                 out,
                 bytesToWrite,
                 &bytesWritten,
                 NULL)) {
-            MyHandleError(
-                    TEXT("Error writing ciphertext.\n"),
-                    GetLastError());
-            goto Exit_MyEncryptFile;
+            PrintError(TEXT("Error writing ciphertext.\n"));
+            goto decrypt_exit;
         }
 
         bytesWrittenAll += bytesWritten;
-        _tprintf("%lu => %lu : %lu\n", bytesRead, bytesWritten, bytesWrittenAll);
     } while (!fEOF);
 
     fReturn = true;
 
-    Exit_MyEncryptFile:
+    decrypt_exit:
 
     if (hSourceFile) {
         CloseHandle(hSourceFile);
