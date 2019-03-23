@@ -16,6 +16,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define BLOCK_SIZE 16
+
 uint8_t *aes_init(size_t key_size);
 
 void aes_key_expansion(uint8_t *key, uint8_t *w);

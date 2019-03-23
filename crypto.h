@@ -7,8 +7,6 @@
 
 #include "common.h"
 
-#define BLOCK_SIZE 16
-
 int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]);
 
 int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[32]);
