@@ -12,11 +12,6 @@
 #include <conio.h>
 #include <stdbool.h>
 
-
-#define KEYLENGTH  0x01000000
-#define ENCRYPT_ALGORITHM CALG_AES_256
-#define ENCRYPT_BLOCK_SIZE 32
-
 static void MyHandleError(LPTSTR psz, int nErrorNumber) {
     fflush(stdout);
     _ftprintf(stderr, TEXT("ERR: %s %x\n"), psz, nErrorNumber);
@@ -27,7 +22,7 @@ static void MyHandleError(LPTSTR psz, int nErrorNumber) {
                   | FORMAT_MESSAGE_IGNORE_INSERTS,
                   NULL,
                   nErrorNumber,
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
                   (LPTSTR) &errMsg,
                   0,
                   NULL);
