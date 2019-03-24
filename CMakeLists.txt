@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.13)
-project(winapi_encryption C)
+project(encryptor C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(winapi_encryption main.c crypto.c crypto.h common.h aes.c)
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=native")
+
+add_executable(encryptor main.c crypto.c crypto.h common.h aes.c)
