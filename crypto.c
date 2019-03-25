@@ -5,14 +5,7 @@
 #include <stdint.h>
 #include "crypto.h"
 
-#define STATUS_UNSUCCESSFUL         ((NTSTATUS)0xC0000001L)
-
-static const BYTE rgbIV[] = {
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
-};
-
-int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
+int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], uint8_t iv[16]) {
     bool fReturn = false;
     HANDLE hSourceFile = INVALID_HANDLE_VALUE;
     HANDLE hDestinationFile = INVALID_HANDLE_VALUE;
@@ -47,7 +40,6 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
     //crypto init
     BCRYPT_ALG_HANDLE hAesAlg = NULL;
     BCRYPT_KEY_HANDLE hKey = NULL;
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
     DWORD cbCipherText = 0,
             cbData = 0,
             cbKeyObject = 0;
@@ -56,23 +48,23 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
             pbIV = NULL;
 
     // Open an algorithm handle.
-    if ((status = BCryptOpenAlgorithmProvider(
+    if (BCryptOpenAlgorithmProvider(
             &hAesAlg,
             BCRYPT_AES_ALGORITHM,
             NULL,
-            0))) {
+            0)) {
         PrintError(TEXT("**** Error 0x%x returned by BCryptOpenAlgorithmProvider\n"));
         goto encrypt_exit;
     }
 
     // Calculate the size of the buffer to hold the KeyObject.
-    if ((status = BCryptGetProperty(
+    if (BCryptGetProperty(
             hAesAlg,
             BCRYPT_OBJECT_LENGTH,
             (PBYTE) &cbKeyObject,
             sizeof(DWORD),
             &cbData,
-            0))) {
+            0)) {
         PrintError(TEXT("**** Error 0x%x returned by BCryptGetProperty\n"));
         goto encrypt_exit;
     }
@@ -92,27 +84,27 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
         goto encrypt_exit;
     }
 
-    memcpy(pbIV, rgbIV, BLOCK_SIZE);
+    memcpy(pbIV, iv, BLOCK_SIZE);
 
-    if ((status = BCryptSetProperty(
+    if (BCryptSetProperty(
             hAesAlg,
             BCRYPT_CHAINING_MODE,
             (PBYTE) BCRYPT_CHAIN_MODE_CBC,
             sizeof(BCRYPT_CHAIN_MODE_CBC),
-            0))) {
+            0)) {
         PrintError(TEXT("**** Error 0x%x returned by BCryptSetProperty\n"));
         goto encrypt_exit;
     }
 
     // Generate the key from supplied input key bytes.
-    if ((status = BCryptGenerateSymmetricKey(
+    if (BCryptGenerateSymmetricKey(
             hAesAlg,
             &hKey,
             pbKeyObject,
             cbKeyObject,
             (PBYTE) key,
             BLOCK_SIZE,
-            0))) {
+            0)) {
         PrintError(TEXT("**** Error 0x%x returned by BCryptGenerateSymmetricKey\n"));
         goto encrypt_exit;
     }
@@ -161,7 +153,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
         //
         // Get the output buffer size.
         //
-        if ((status = BCryptEncrypt(
+        if (BCryptEncrypt(
                 hKey,
                 in,
                 BLOCK_SIZE,
@@ -171,7 +163,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
                 NULL,
                 0,
                 &cbCipherText,
-                0))) {
+                0)) {
             PrintError(TEXT("**** Error 0x%x returned by BCryptEncrypt\n"));
             goto encrypt_exit;
         }
@@ -184,7 +176,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
 
         // Use the key to encrypt the plaintext buffer.
         // For block sized messages, block padding will add an extra block.
-        if ((status = BCryptEncrypt(
+        if (BCryptEncrypt(
                 hKey,
                 in,
                 BLOCK_SIZE,
@@ -194,7 +186,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
                 out,
                 BLOCK_SIZE,
                 &cbData,
-                0))) {
+                0)) {
             PrintError(TEXT("**** Error 0x%x returned by BCryptEncrypt\n"));
             goto encrypt_exit;
         }
@@ -250,7 +242,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
     return fReturn;
 }
 
-int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
+int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], uint8_t iv[16]) {
     bool fReturn = false;
     HANDLE hSourceFile = INVALID_HANDLE_VALUE;
     HANDLE hDestinationFile = INVALID_HANDLE_VALUE;
@@ -285,7 +277,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
     //crypto init
     BCRYPT_ALG_HANDLE hAesAlg = NULL;
     BCRYPT_KEY_HANDLE hKey = NULL;
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
     DWORD cbCipherText = 0,
             cbData = 0,
             cbKeyObject = 0;
@@ -294,23 +285,23 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
             pbIV = NULL;
 
     // Open an algorithm handle.
-    if ((status = BCryptOpenAlgorithmProvider(
+    if (BCryptOpenAlgorithmProvider(
             &hAesAlg,
             BCRYPT_AES_ALGORITHM,
             NULL,
-            0))) {
+            0)) {
         PrintError(TEXT("**** Error 0x%x returned by BCryptOpenAlgorithmProvider\n"));
         goto decrypt_exit;
     }
 
     // Calculate the size of the buffer to hold the KeyObject.
-    if ((status = BCryptGetProperty(
+    if (BCryptGetProperty(
             hAesAlg,
             BCRYPT_OBJECT_LENGTH,
             (PBYTE) &cbKeyObject,
             sizeof(DWORD),
             &cbData,
-            0))) {
+            0)) {
         PrintError(TEXT("**** Error 0x%x returned by BCryptGetProperty\n"));
         goto decrypt_exit;
     }
@@ -330,27 +321,27 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
         goto decrypt_exit;
     }
 
-    memcpy(pbIV, rgbIV, BLOCK_SIZE);
+    memcpy(pbIV, iv, BLOCK_SIZE);
 
-    if ((status = BCryptSetProperty(
+    if (BCryptSetProperty(
             hAesAlg,
             BCRYPT_CHAINING_MODE,
             (PBYTE) BCRYPT_CHAIN_MODE_CBC,
             sizeof(BCRYPT_CHAIN_MODE_CBC),
-            0))) {
+            0)) {
         PrintError(TEXT("**** Error 0x%x returned by BCryptSetProperty\n"));
         goto decrypt_exit;
     }
 
     // Generate the key from supplied input key bytes.
-    if ((status = BCryptGenerateSymmetricKey(
+    if (BCryptGenerateSymmetricKey(
             hAesAlg,
             &hKey,
             pbKeyObject,
             cbKeyObject,
             (PBYTE) key,
             BLOCK_SIZE,
-            0))) {
+            0)) {
         PrintError(TEXT("**** Error 0x%x returned by BCryptGenerateSymmetricKey\n"));
         goto decrypt_exit;
     }
@@ -397,10 +388,9 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
         //*******************************
         //decryption
 
-//
         // Get the output buffer size.
         //
-        if ((status = BCryptDecrypt(
+        if (BCryptDecrypt(
                 hKey,
                 in,
                 BLOCK_SIZE,
@@ -410,7 +400,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
                 NULL,
                 0,
                 &cbCipherText,
-                0))) {
+                0)) {
             PrintError(TEXT("**** Error 0x%x returned by BCryptDecrypt\n"));
             goto decrypt_exit;
         }
@@ -423,7 +413,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
 
         // Use the key to encrypt the plaintext buffer.
         // For block sized messages, block padding will add an extra block.
-        if ((status = BCryptDecrypt(
+        if (BCryptDecrypt(
                 hKey,
                 in,
                 BLOCK_SIZE,
@@ -433,7 +423,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16]) {
                 out,
                 BLOCK_SIZE,
                 &cbData,
-                0))) {
+                0)) {
             PrintError(TEXT("**** Error 0x%x returned by BCryptDecrypt\n"));
             goto decrypt_exit;
         }
