@@ -7,17 +7,14 @@ int main(int argc, char *argv[]) {
             0xd8bddad0,
             0x0191fb88,
             0x2c838aad,
-            0x347beec3,
-            0xbbe2060f,
-            0x747a61eb,
-            0xd9bfa0bd,
-            0xd85f0f74
+            0x347beec3
     };
 
-    if (argc < 3)
+    if (argc < 4)
         return 1;
 
     encrypt(argv[1], argv[2], (uint8_t *) key);
+    decrypt(argv[2], argv[3], (uint8_t *) key);
 
     return 0;
 }

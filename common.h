@@ -11,7 +11,7 @@
 #include <tchar.h>
 #include <stdio.h>
 #include <windows.h>
-#include <wincrypt.h>
+#include <bcrypt.h>
 #include <conio.h>
 #include <stdbool.h>
 
@@ -24,7 +24,7 @@ static void PrintError(LPTSTR errDesc) {
                   | FORMAT_MESSAGE_IGNORE_INSERTS,
                   NULL,
                   GetLastError(),
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
                   (LPTSTR) &errMsg,
                   0,
                   NULL);
