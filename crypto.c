@@ -9,13 +9,12 @@
 void secure_random(PBYTE dst, ULONG length) {
     BCRYPT_ALG_HANDLE hAesAlg = NULL;
 
-    // Open an algorithm handle.
     if (BCryptOpenAlgorithmProvider(
             &hAesAlg,
             BCRYPT_RNG_ALGORITHM,
             NULL,
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptOpenAlgorithmProvider\n"));
+        PrintError(TEXT("Error returned by BCryptOpenAlgorithmProvider\n"));
         goto sr_exit;
     }
 
@@ -91,13 +90,13 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
         goto encrypt_exit;
     }
 
-    pbKeyObject = (PBYTE) HeapAlloc(GetProcessHeap(), 0, cbKeyObject);
+    pbKeyObject = malloc(cbKeyObject);
     if (NULL == pbKeyObject) {
         PrintError(TEXT("**** memory allocation failed\n"));
         goto encrypt_exit;
     }
 
-    ivBuffer = (PBYTE) HeapAlloc(GetProcessHeap(), 0, BLOCK_SIZE);
+    ivBuffer = malloc(BLOCK_SIZE);
     if (NULL == ivBuffer) {
         PrintError(TEXT("**** memory allocation failed\n"));
         goto encrypt_exit;
@@ -189,7 +188,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
             goto encrypt_exit;
         }
 
-        pbCipherText = (PBYTE) HeapAlloc(GetProcessHeap(), 0, cbCipherText);
+        pbCipherText = malloc(cbCipherText);
         if (NULL == pbCipherText) {
             PrintError(TEXT("**** memory allocation failed\n"));
             goto encrypt_exit;
@@ -243,15 +242,15 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
     }
 
     if (pbCipherText) {
-        HeapFree(GetProcessHeap(), 0, pbCipherText);
+        free(pbCipherText);
     }
 
     if (pbKeyObject) {
-        HeapFree(GetProcessHeap(), 0, pbKeyObject);
+        free(pbKeyObject);
     }
 
     if (ivBuffer) {
-        HeapFree(GetProcessHeap(), 0, ivBuffer);
+        free(ivBuffer);
     }
 
     return fReturn;
@@ -317,7 +316,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
         goto decrypt_exit;
     }
 
-    pbKeyObject = (PBYTE) HeapAlloc(GetProcessHeap(), 0, cbKeyObject);
+    pbKeyObject = malloc(cbKeyObject);
     if (NULL == pbKeyObject) {
         PrintError(TEXT("**** memory allocation failed\n"));
         goto decrypt_exit;
@@ -363,7 +362,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
         goto decrypt_exit;
     }
 
-    ivBuffer = (PBYTE) HeapAlloc(GetProcessHeap(), 0, BLOCK_SIZE);
+    ivBuffer = malloc(BLOCK_SIZE);
     if (NULL == ivBuffer) {
         PrintError(TEXT("**** memory allocation failed\n"));
         goto decrypt_exit;
@@ -413,7 +412,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
             goto decrypt_exit;
         }
 
-        pbCipherText = (PBYTE) HeapAlloc(GetProcessHeap(), 0, cbCipherText);
+        pbCipherText = malloc(cbCipherText);
         if (NULL == pbCipherText) {
             PrintError(TEXT("**** memory allocation failed\n"));
             goto decrypt_exit;
@@ -436,7 +435,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
 
         DWORD bytesToWrite = (DWORD) (BLOCK_SIZE < fileSize.QuadPart - bytesWrittenAll ? BLOCK_SIZE :
                                       fileSize.QuadPart - bytesWrittenAll);
-
+        
         if (!WriteFile(
                 hDestinationFile,
                 out,
@@ -471,15 +470,15 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
     }
 
     if (pbCipherText) {
-        HeapFree(GetProcessHeap(), 0, pbCipherText);
+        free(pbCipherText);
     }
 
     if (pbKeyObject) {
-        HeapFree(GetProcessHeap(), 0, pbKeyObject);
+        free(pbKeyObject);
     }
 
     if (ivBuffer) {
-        HeapFree(GetProcessHeap(), 0, ivBuffer);
+        free(ivBuffer);
     }
 
     return fReturn;
