@@ -5,7 +5,33 @@
 #include <stdint.h>
 #include "crypto.h"
 
-int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], uint8_t iv[16]) {
+
+void secure_random(PBYTE dst, ULONG length) {
+    BCRYPT_ALG_HANDLE hAesAlg = NULL;
+
+    // Open an algorithm handle.
+    if (BCryptOpenAlgorithmProvider(
+            &hAesAlg,
+            BCRYPT_RNG_ALGORITHM,
+            NULL,
+            0)) {
+        PrintError(TEXT("**** Error 0x%x returned by BCryptOpenAlgorithmProvider\n"));
+        goto sr_exit;
+    }
+
+    if (BCryptGenRandom(hAesAlg, dst, length, 0)) {
+        PrintError(TEXT("Error returned by BCryptGenRandom\n"));
+        goto sr_exit;
+    }
+
+    sr_exit:
+
+    if (hAesAlg) {
+        BCryptCloseAlgorithmProvider(hAesAlg, 0);
+    }
+}
+
+int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE iv) {
     bool fReturn = false;
     HANDLE hSourceFile = INVALID_HANDLE_VALUE;
     HANDLE hDestinationFile = INVALID_HANDLE_VALUE;
@@ -36,8 +62,6 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         goto encrypt_exit;
     }
 
-    //*******************************
-    //crypto init
     BCRYPT_ALG_HANDLE hAesAlg = NULL;
     BCRYPT_KEY_HANDLE hKey = NULL;
     DWORD cbCipherText = 0,
@@ -45,9 +69,8 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
             cbKeyObject = 0;
     PBYTE pbCipherText = NULL,
             pbKeyObject = NULL,
-            pbIV = NULL;
+            ivBuffer = NULL;
 
-    // Open an algorithm handle.
     if (BCryptOpenAlgorithmProvider(
             &hAesAlg,
             BCRYPT_AES_ALGORITHM,
@@ -57,7 +80,6 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         goto encrypt_exit;
     }
 
-    // Calculate the size of the buffer to hold the KeyObject.
     if (BCryptGetProperty(
             hAesAlg,
             BCRYPT_OBJECT_LENGTH,
@@ -69,22 +91,19 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         goto encrypt_exit;
     }
 
-    // Allocate the key object on the heap.
     pbKeyObject = (PBYTE) HeapAlloc(GetProcessHeap(), 0, cbKeyObject);
     if (NULL == pbKeyObject) {
         PrintError(TEXT("**** memory allocation failed\n"));
         goto encrypt_exit;
     }
 
-    // Allocate a buffer for the IV. The buffer is consumed during the
-    // encrypt/decrypt process.
-    pbIV = (PBYTE) HeapAlloc(GetProcessHeap(), 0, BLOCK_SIZE);
-    if (NULL == pbIV) {
+    ivBuffer = (PBYTE) HeapAlloc(GetProcessHeap(), 0, BLOCK_SIZE);
+    if (NULL == ivBuffer) {
         PrintError(TEXT("**** memory allocation failed\n"));
         goto encrypt_exit;
     }
 
-    memcpy(pbIV, iv, BLOCK_SIZE);
+    memcpy(ivBuffer, iv, BLOCK_SIZE);
 
     if (BCryptSetProperty(
             hAesAlg,
@@ -96,7 +115,6 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         goto encrypt_exit;
     }
 
-    // Generate the key from supplied input key bytes.
     if (BCryptGenerateSymmetricKey(
             hAesAlg,
             &hKey,
@@ -108,7 +126,6 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         PrintError(TEXT("**** Error 0x%x returned by BCryptGenerateSymmetricKey\n"));
         goto encrypt_exit;
     }
-    //*******************************
 
     uint8_t in[BLOCK_SIZE];
     uint8_t out[BLOCK_SIZE];
@@ -125,6 +142,16 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
             &bytesWritten,
             NULL)) {
         PrintError(TEXT("Error writing fileSize\n"));
+        goto encrypt_exit;
+    }
+
+    if (!WriteFile(
+            hDestinationFile,
+            &iv,
+            BLOCK_SIZE,
+            &bytesWritten,
+            NULL)) {
+        PrintError(TEXT("Error writing iv\n"));
         goto encrypt_exit;
     }
 
@@ -147,18 +174,12 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         if (!bytesRead) break;
         fEOF = bytesRead < BLOCK_SIZE;
 
-        //*******************************
-        //encryption
-
-        //
-        // Get the output buffer size.
-        //
         if (BCryptEncrypt(
                 hKey,
                 in,
                 BLOCK_SIZE,
                 NULL,
-                pbIV,
+                ivBuffer,
                 BLOCK_SIZE,
                 NULL,
                 0,
@@ -174,14 +195,12 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
             goto encrypt_exit;
         }
 
-        // Use the key to encrypt the plaintext buffer.
-        // For block sized messages, block padding will add an extra block.
         if (BCryptEncrypt(
                 hKey,
                 in,
                 BLOCK_SIZE,
                 NULL,
-                pbIV,
+                ivBuffer,
                 BLOCK_SIZE,
                 out,
                 BLOCK_SIZE,
@@ -190,7 +209,6 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
             PrintError(TEXT("**** Error 0x%x returned by BCryptEncrypt\n"));
             goto encrypt_exit;
         }
-        //*******************************
 
         if (!WriteFile(
                 hDestinationFile,
@@ -216,8 +234,6 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         CloseHandle(hDestinationFile);
     }
 
-    //*******************************
-    //crypto close
     if (hAesAlg) {
         BCryptCloseAlgorithmProvider(hAesAlg, 0);
     }
@@ -234,15 +250,14 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         HeapFree(GetProcessHeap(), 0, pbKeyObject);
     }
 
-    if (pbIV) {
-        HeapFree(GetProcessHeap(), 0, pbIV);
+    if (ivBuffer) {
+        HeapFree(GetProcessHeap(), 0, ivBuffer);
     }
-    //*******************************
 
     return fReturn;
 }
 
-int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], uint8_t iv[16]) {
+int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
     bool fReturn = false;
     HANDLE hSourceFile = INVALID_HANDLE_VALUE;
     HANDLE hDestinationFile = INVALID_HANDLE_VALUE;
@@ -273,8 +288,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         goto decrypt_exit;
     }
 
-    //*******************************
-    //crypto init
     BCRYPT_ALG_HANDLE hAesAlg = NULL;
     BCRYPT_KEY_HANDLE hKey = NULL;
     DWORD cbCipherText = 0,
@@ -282,9 +295,8 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
             cbKeyObject = 0;
     PBYTE pbCipherText = NULL,
             pbKeyObject = NULL,
-            pbIV = NULL;
+            ivBuffer = NULL;
 
-    // Open an algorithm handle.
     if (BCryptOpenAlgorithmProvider(
             &hAesAlg,
             BCRYPT_AES_ALGORITHM,
@@ -294,7 +306,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         goto decrypt_exit;
     }
 
-    // Calculate the size of the buffer to hold the KeyObject.
     if (BCryptGetProperty(
             hAesAlg,
             BCRYPT_OBJECT_LENGTH,
@@ -306,22 +317,11 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         goto decrypt_exit;
     }
 
-    // Allocate the key object on the heap.
     pbKeyObject = (PBYTE) HeapAlloc(GetProcessHeap(), 0, cbKeyObject);
     if (NULL == pbKeyObject) {
         PrintError(TEXT("**** memory allocation failed\n"));
         goto decrypt_exit;
     }
-
-    // Allocate a buffer for the IV. The buffer is consumed during the
-    // encrypt/decrypt process.
-    pbIV = (PBYTE) HeapAlloc(GetProcessHeap(), 0, BLOCK_SIZE);
-    if (NULL == pbIV) {
-        PrintError(TEXT("**** memory allocation failed\n"));
-        goto decrypt_exit;
-    }
-
-    memcpy(pbIV, iv, BLOCK_SIZE);
 
     if (BCryptSetProperty(
             hAesAlg,
@@ -333,7 +333,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         goto decrypt_exit;
     }
 
-    // Generate the key from supplied input key bytes.
     if (BCryptGenerateSymmetricKey(
             hAesAlg,
             &hKey,
@@ -345,8 +344,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         PrintError(TEXT("**** Error 0x%x returned by BCryptGenerateSymmetricKey\n"));
         goto decrypt_exit;
     }
-
-    //*******************************
 
     uint8_t in[BLOCK_SIZE];
     uint8_t out[BLOCK_SIZE];
@@ -363,6 +360,22 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
             &bytesRead,
             NULL)) {
         PrintError(TEXT("Error reading fileSize.\n"));
+        goto decrypt_exit;
+    }
+
+    ivBuffer = (PBYTE) HeapAlloc(GetProcessHeap(), 0, BLOCK_SIZE);
+    if (NULL == ivBuffer) {
+        PrintError(TEXT("**** memory allocation failed\n"));
+        goto decrypt_exit;
+    }
+
+    if (!ReadFile(
+            hSourceFile,
+            &ivBuffer,
+            BLOCK_SIZE,
+            &bytesRead,
+            NULL)) {
+        PrintError(TEXT("Error reading iv.\n"));
         goto decrypt_exit;
     }
 
@@ -385,17 +398,12 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         if (!bytesRead) break;
         fEOF = bytesRead < BLOCK_SIZE;
 
-        //*******************************
-        //decryption
-
-        // Get the output buffer size.
-        //
         if (BCryptDecrypt(
                 hKey,
                 in,
                 BLOCK_SIZE,
                 NULL,
-                pbIV,
+                ivBuffer,
                 BLOCK_SIZE,
                 NULL,
                 0,
@@ -411,14 +419,12 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
             goto decrypt_exit;
         }
 
-        // Use the key to encrypt the plaintext buffer.
-        // For block sized messages, block padding will add an extra block.
         if (BCryptDecrypt(
                 hKey,
                 in,
                 BLOCK_SIZE,
                 NULL,
-                pbIV,
+                ivBuffer,
                 BLOCK_SIZE,
                 out,
                 BLOCK_SIZE,
@@ -427,8 +433,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
             PrintError(TEXT("**** Error 0x%x returned by BCryptDecrypt\n"));
             goto decrypt_exit;
         }
-
-        //*******************************
 
         DWORD bytesToWrite = (DWORD) (BLOCK_SIZE < fileSize.QuadPart - bytesWrittenAll ? BLOCK_SIZE :
                                       fileSize.QuadPart - bytesWrittenAll);
@@ -458,8 +462,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         CloseHandle(hDestinationFile);
     }
 
-    //*******************************
-    //crypto close
     if (hAesAlg) {
         BCryptCloseAlgorithmProvider(hAesAlg, 0);
     }
@@ -476,10 +478,9 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16], ui
         HeapFree(GetProcessHeap(), 0, pbKeyObject);
     }
 
-    if (pbIV) {
-        HeapFree(GetProcessHeap(), 0, pbIV);
+    if (ivBuffer) {
+        HeapFree(GetProcessHeap(), 0, ivBuffer);
     }
-    //*******************************
 
     return fReturn;
 }

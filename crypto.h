@@ -9,9 +9,11 @@
 
 #define BLOCK_SIZE 16
 
-int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16],  uint8_t iv[16]);
+void secure_random(PBYTE dst, ULONG length);
 
-int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, uint8_t key[16],  uint8_t iv[16]);
+int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16],  PBYTE iv);
+
+int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]);
 
 
 #endif //WINAPI_ENCRYPTION_CRYPTO_H
