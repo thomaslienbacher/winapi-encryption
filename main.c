@@ -3,6 +3,25 @@
 #include "crypto.h"
 
 int main(int _argc, char *_argv[]) {
+    DWORD len = 0;
+    BYTE *data = hash(&len, "thomas", strlen("thomas"));
+
+    for (int i = 0; i < len; i++) {
+        printf("%x", data[i]);
+    }
+    puts("");
+
+    BYTE coll[16] = {0};
+    data_half_collapse(coll, data, len);
+
+    for (int i = 0; i < 16; i++) {
+        printf("%x", coll[i]);
+    }
+    puts("");
+
+    free(data);
+    puts("");
+
     uint8_t key[] = {
             0x7d, 0x1a, 0x61, 0x3c,
             0x1f, 0x3e, 0x45, 0x2d,

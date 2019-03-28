@@ -5,12 +5,117 @@
 #include <stdint.h>
 #include "crypto.h"
 
-
-void secure_random(PBYTE dst, ULONG length) {
-    BCRYPT_ALG_HANDLE hAesAlg = NULL;
+void *hash(PDWORD hashSize, PBYTE src, ULONG length) {
+    BCRYPT_ALG_HANDLE hAlg = NULL;
+    BCRYPT_HASH_HANDLE hHash = NULL;
+    DWORD cbData = 0,
+            hashObjectSize = 0;
+    PBYTE hashObject = NULL;
+    PBYTE output = NULL;
 
     if (BCryptOpenAlgorithmProvider(
-            &hAesAlg,
+            &hAlg,
+            BCRYPT_SHA256_ALGORITHM,
+            NULL,
+            0)) {
+        PrintError(TEXT("Error returned by BCryptOpenAlgorithmProvider\n"));
+        goto hash_exit;
+    }
+
+    if (BCryptGetProperty(
+            hAlg,
+            BCRYPT_OBJECT_LENGTH,
+            (PBYTE) &hashObjectSize,
+            sizeof(DWORD),
+            &cbData,
+            0)) {
+        PrintError(TEXT("**** Error 0x%x returned by BCryptGetProperty\n"));
+        goto hash_exit;
+    }
+
+    hashObject = malloc(hashObjectSize);
+    if (NULL == hashObject) {
+        PrintError(TEXT("Memory allocation failed\n"));
+        goto hash_exit;
+    }
+
+    if (BCryptGetProperty(
+            hAlg,
+            BCRYPT_HASH_LENGTH,
+            hashSize,
+            sizeof(DWORD),
+            &cbData,
+            0)) {
+        PrintError(TEXT("**** Error 0x%x returned by BCryptGetProperty\n"));
+        goto hash_exit;
+    }
+
+    output = malloc(*hashSize);
+    if (NULL == output) {
+        PrintError(TEXT("Memory allocation failed\n"));
+        goto hash_exit;
+    }
+
+    if (BCryptCreateHash(
+            hAlg,
+            &hHash,
+            hashObject,
+            hashObjectSize,
+            NULL,
+            0,
+            0)) {
+        PrintError(TEXT("Error returned by BCryptCreateHash\n"));
+        goto hash_exit;
+    }
+
+    if (BCryptHashData(
+            hHash,
+            src,
+            length,
+            0)) {
+        PrintError(TEXT("Error returned by BCryptHashData\n"));
+        goto hash_exit;
+    }
+
+    if (BCryptFinishHash(
+            hHash,
+            output,
+            *hashSize,
+            0)) {
+        PrintError(TEXT("Error returned by BCryptFinishHash\n"));
+        goto hash_exit;
+    }
+
+    hash_exit:
+
+    if (hHash) {
+        BCryptDestroyHash(hHash);
+    }
+
+    if (hashObject) {
+        free(hashObject);
+    }
+
+    if (hAlg) {
+        BCryptCloseAlgorithmProvider(hAlg, 0);
+    }
+
+    return output;
+}
+
+void data_half_collapse(PBYTE dst, PBYTE src, ULONG length) {
+    ULONG iA = 0, iB = length / 2;
+
+    for (; iB < length; iA++, iB++) {
+        dst[iA] = src[iA] ^ src[iB];
+    }
+}
+
+void secure_random(PBYTE dst, ULONG length) {
+    BCRYPT_ALG_HANDLE hAlg = NULL;
+
+    if (BCryptOpenAlgorithmProvider(
+            &hAlg,
             BCRYPT_RNG_ALGORITHM,
             NULL,
             0)) {
@@ -18,15 +123,15 @@ void secure_random(PBYTE dst, ULONG length) {
         goto sr_exit;
     }
 
-    if (BCryptGenRandom(hAesAlg, dst, length, 0)) {
+    if (BCryptGenRandom(hAlg, dst, length, 0)) {
         PrintError(TEXT("Error returned by BCryptGenRandom\n"));
         goto sr_exit;
     }
 
     sr_exit:
 
-    if (hAesAlg) {
-        BCryptCloseAlgorithmProvider(hAesAlg, 0);
+    if (hAlg) {
+        BCryptCloseAlgorithmProvider(hAlg, 0);
     }
 }
 
