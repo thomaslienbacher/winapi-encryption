@@ -3,7 +3,7 @@ project(win_bcrypt_encryption C)
 
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=native")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=native -Wall")
 
 add_executable(win_bcrypt_encryption main.c crypto.c crypto.h common.h)
 

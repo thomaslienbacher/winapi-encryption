@@ -75,7 +75,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
             BCRYPT_AES_ALGORITHM,
             NULL,
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptOpenAlgorithmProvider\n"));
+        PrintError(TEXT("Error returned by BCryptOpenAlgorithmProvider\n"));
         goto encrypt_exit;
     }
 
@@ -86,19 +86,19 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
             sizeof(DWORD),
             &cbData,
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptGetProperty\n"));
+        PrintError(TEXT("Error returned by BCryptGetProperty\n"));
         goto encrypt_exit;
     }
 
     pbKeyObject = malloc(cbKeyObject);
     if (NULL == pbKeyObject) {
-        PrintError(TEXT("**** memory allocation failed\n"));
+        PrintError(TEXT("Memory allocation failed\n"));
         goto encrypt_exit;
     }
 
     ivBuffer = malloc(BLOCK_SIZE);
     if (NULL == ivBuffer) {
-        PrintError(TEXT("**** memory allocation failed\n"));
+        PrintError(TEXT("Memory allocation failed\n"));
         goto encrypt_exit;
     }
 
@@ -110,7 +110,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
             (PBYTE) BCRYPT_CHAIN_MODE_CBC,
             sizeof(BCRYPT_CHAIN_MODE_CBC),
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptSetProperty\n"));
+        PrintError(TEXT("Error returned by BCryptSetProperty\n"));
         goto encrypt_exit;
     }
 
@@ -122,7 +122,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
             (PBYTE) key,
             BLOCK_SIZE,
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptGenerateSymmetricKey\n"));
+        PrintError(TEXT("Error returned by BCryptGenerateSymmetricKey\n"));
         goto encrypt_exit;
     }
 
@@ -146,7 +146,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
 
     if (!WriteFile(
             hDestinationFile,
-            &iv,
+            iv,
             BLOCK_SIZE,
             &bytesWritten,
             NULL)) {
@@ -184,13 +184,13 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
                 0,
                 &cbCipherText,
                 0)) {
-            PrintError(TEXT("**** Error 0x%x returned by BCryptEncrypt\n"));
+            PrintError(TEXT("Error returned by BCryptEncrypt\n"));
             goto encrypt_exit;
         }
 
         pbCipherText = malloc(cbCipherText);
         if (NULL == pbCipherText) {
-            PrintError(TEXT("**** memory allocation failed\n"));
+            PrintError(TEXT("Memory allocation failed\n"));
             goto encrypt_exit;
         }
 
@@ -205,7 +205,7 @@ int encrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16], PBYTE
                 BLOCK_SIZE,
                 &cbData,
                 0)) {
-            PrintError(TEXT("**** Error 0x%x returned by BCryptEncrypt\n"));
+            PrintError(TEXT("Error returned by BCryptEncrypt\n"));
             goto encrypt_exit;
         }
 
@@ -301,7 +301,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
             BCRYPT_AES_ALGORITHM,
             NULL,
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptOpenAlgorithmProvider\n"));
+        PrintError(TEXT("Error returned by BCryptOpenAlgorithmProvider\n"));
         goto decrypt_exit;
     }
 
@@ -312,13 +312,13 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
             sizeof(DWORD),
             &cbData,
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptGetProperty\n"));
+        PrintError(TEXT("Error returned by BCryptGetProperty\n"));
         goto decrypt_exit;
     }
 
     pbKeyObject = malloc(cbKeyObject);
     if (NULL == pbKeyObject) {
-        PrintError(TEXT("**** memory allocation failed\n"));
+        PrintError(TEXT("Memory allocation failed\n"));
         goto decrypt_exit;
     }
 
@@ -328,7 +328,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
             (PBYTE) BCRYPT_CHAIN_MODE_CBC,
             sizeof(BCRYPT_CHAIN_MODE_CBC),
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptSetProperty\n"));
+        PrintError(TEXT("Error returned by BCryptSetProperty\n"));
         goto decrypt_exit;
     }
 
@@ -340,7 +340,7 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
             (PBYTE) key,
             BLOCK_SIZE,
             0)) {
-        PrintError(TEXT("**** Error 0x%x returned by BCryptGenerateSymmetricKey\n"));
+        PrintError(TEXT("Error returned by BCryptGenerateSymmetricKey\n"));
         goto decrypt_exit;
     }
 
@@ -349,7 +349,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
     DWORD bytesRead = 0;
     DWORD bytesWritten = 0;
     DWORD bytesWrittenAll = 0;
-
     LARGE_INTEGER fileSize = {0};
 
     if (!ReadFile(
@@ -364,13 +363,13 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
 
     ivBuffer = malloc(BLOCK_SIZE);
     if (NULL == ivBuffer) {
-        PrintError(TEXT("**** memory allocation failed\n"));
+        PrintError(TEXT("Memory allocation failed\n"));
         goto decrypt_exit;
     }
 
     if (!ReadFile(
             hSourceFile,
-            &ivBuffer,
+            ivBuffer,
             BLOCK_SIZE,
             &bytesRead,
             NULL)) {
@@ -408,13 +407,13 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
                 0,
                 &cbCipherText,
                 0)) {
-            PrintError(TEXT("**** Error 0x%x returned by BCryptDecrypt\n"));
+            PrintError(TEXT("Error returned by BCryptDecrypt\n"));
             goto decrypt_exit;
         }
 
         pbCipherText = malloc(cbCipherText);
         if (NULL == pbCipherText) {
-            PrintError(TEXT("**** memory allocation failed\n"));
+            PrintError(TEXT("Memory allocation failed\n"));
             goto decrypt_exit;
         }
 
@@ -429,13 +428,13 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
                 BLOCK_SIZE,
                 &cbData,
                 0)) {
-            PrintError(TEXT("**** Error 0x%x returned by BCryptDecrypt\n"));
+            PrintError(TEXT("Error returned by BCryptDecrypt\n"));
             goto decrypt_exit;
         }
 
         DWORD bytesToWrite = (DWORD) (BLOCK_SIZE < fileSize.QuadPart - bytesWrittenAll ? BLOCK_SIZE :
                                       fileSize.QuadPart - bytesWrittenAll);
-        
+
         if (!WriteFile(
                 hDestinationFile,
                 out,

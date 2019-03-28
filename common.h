@@ -5,8 +5,8 @@
 #ifndef WINAPI_ENCRYPTION_COMMON_H
 #define WINAPI_ENCRYPTION_COMMON_H
 
-//#define UNICODE
-//#define _UNICODE
+#define UNICODE
+#define _UNICODE
 
 #include <tchar.h>
 #include <stdio.h>
