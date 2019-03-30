@@ -3,35 +3,6 @@
 #include "crypto.h"
 
 int main(int _argc, char *_argv[]) {
-    DWORD len = 0;
-    BYTE *data = hash(&len, "thomas", strlen("thomas"));
-
-    for (int i = 0; i < len; i++) {
-        printf("%x", data[i]);
-    }
-    puts("");
-
-    BYTE coll[16] = {0};
-    data_half_collapse(coll, data, len);
-
-    for (int i = 0; i < 16; i++) {
-        printf("%x", coll[i]);
-    }
-    puts("");
-
-    free(data);
-    puts("");
-
-    uint8_t key[] = {
-            0x7d, 0x1a, 0x61, 0x3c,
-            0x1f, 0x3e, 0x45, 0x2d,
-            0x55, 0xc1, 0x98, 0xe5,
-            0x29, 0x2b, 0x06, 0x7a
-    };
-
-    UCHAR gen[BLOCK_SIZE];
-    secure_random(gen, BLOCK_SIZE);
-
     LPTSTR *szArglist;
     int nArgs;
 
@@ -41,21 +12,35 @@ int main(int _argc, char *_argv[]) {
     szArglist = _argv;
     nArgs = _argc;
 #endif
-    if (nArgs < 4) {
-        _tprintf(TEXT("Usage: %s <input> <encrypted> <decrypted>\n"), szArglist[0]);
-        _tprintf(TEXT("Use - to denote no file in <encrypted> <decrypted>\n"));
+
+    if (nArgs < 5) {
+        _tprintf(TEXT("Usage: %s <key> <plaintext> <encrypted> <decrypted>\n"), szArglist[0]);
+        _tprintf(TEXT("Use - to denote no file in <plaintext> <decrypted>\n"));
         return 1;
     }
 
-    if (_tcscmp(szArglist[1], TEXT("-")) != 0 && _tcscmp(szArglist[2], TEXT("-")) != 0) {
-        _tprintf(TEXT("Encrypting: %s => %s\n"), szArglist[1], szArglist[2]);
-        encrypt(szArglist[1], szArglist[2], key, gen);
+    DWORD len = 0;
+    BYTE *keyHash = hash(&len, szArglist[1], lstrlen(szArglist[1]) * sizeof(TCHAR));
+    BYTE key[16] = {0};
+    data_half_collapse(key, keyHash, len);
+
+    LPTSTR plaintext = szArglist[2];
+    LPTSTR encrypted = szArglist[3];
+    LPTSTR decrypted = szArglist[4];
+
+    if (_tcscmp(plaintext, TEXT("-")) != 0) {
+        _tprintf(TEXT("Encrypting: %s => %s\n"), plaintext, encrypted);
+        UCHAR gen[BLOCK_SIZE];
+        secure_random(gen, BLOCK_SIZE);
+        encrypt(plaintext, encrypted, key, gen);
     }
 
-    if (_tcscmp(szArglist[2], TEXT("-")) != 0 && _tcscmp(szArglist[3], TEXT("-")) != 0) {
-        _tprintf(TEXT("Decrypting: %s => %s\n"), szArglist[2], szArglist[3]);
-        decrypt(szArglist[2], szArglist[3], key);
+    if (_tcscmp(decrypted, TEXT("-")) != 0) {
+        _tprintf(TEXT("Decrypting: %s => %s\n"), encrypted, decrypted);
+        decrypt(encrypted, decrypted, key);
     }
+
+    free(keyHash);
 
 #ifdef UNICODE
     LocalFree(szArglist);

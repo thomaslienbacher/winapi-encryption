@@ -2,7 +2,7 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
-      <config projectName="win_bcrypt_encryption" targetName="win_bcrypt_encryption" />
+      <config projectName="cngcrypt" targetName="cngcrypt" />
     </generated>
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
@@ -14,9 +14,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f940d773-d6b2-4667-a04d-0568ab777075" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto.c" beforeDir="false" afterPath="$PROJECT_DIR$/crypto.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto.h" beforeDir="false" afterPath="$PROJECT_DIR$/crypto.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -42,14 +42,14 @@
     <expand />
     <select />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="5" column="71" selection-start-line="5" selection-start-column="71" selection-end-line="5" selection-end-column="71" />
+            <state relative-caret-position="162">
+              <caret line="9" column="30" selection-start-line="9" selection-start-column="30" selection-end-line="9" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -57,8 +57,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="217">
-              <caret line="14" column="32" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="32" />
+            <state relative-caret-position="90">
+              <caret line="5" column="14" selection-start-line="5" selection-start-column="14" selection-end-line="5" selection-end-column="14" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -69,8 +69,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/crypto.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="250">
-              <caret line="109" column="16" selection-start-line="109" selection-start-column="16" selection-end-line="109" selection-end-column="16" />
+            <state relative-caret-position="1135">
+              <caret line="562" selection-start-line="562" selection-end-line="562" />
               <folding>
                 <element signature="e#43#62#0" expanded="true" />
               </folding>
@@ -123,9 +123,9 @@
         <option value="$PROJECT_DIR$/cmake-build-relwithdebinfo/t.txt" />
         <option value="$PROJECT_DIR$/cmake-build-release/t.txt" />
         <option value="$PROJECT_DIR$/common.h" />
-        <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/crypto.h" />
         <option value="$PROJECT_DIR$/crypto.c" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/main.c" />
       </list>
     </option>
@@ -141,15 +141,16 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="win_bcrypt_encryption" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cngcrypt" type="b2602c69:ProjectViewProjectNode" />
               <item name="winapi-encryption" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="win_bcrypt_encryption" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cngcrypt" type="b2602c69:ProjectViewProjectNode" />
               <item name="winapi-encryption" type="462c0819:PsiDirectoryNode" />
               <item name="cmake-build-release" type="462c0819:PsiDirectoryNode" />
             </path>
@@ -157,7 +158,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -189,12 +189,27 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
-    <configuration name="win_bcrypt_encryption args" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="t.txt e.txt d.txt" PASS_PARENT_ENVS_2="true" PROJECT_NAME="win_bcrypt_encryption" TARGET_NAME="win_bcrypt_encryption" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="win_bcrypt_encryption" RUN_TARGET_NAME="win_bcrypt_encryption">
+  <component name="RunManager" selected="Application.cngcrypt decrypt">
+    <configuration name="cngcrypt decrypt" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="451855 - e.txt d.txt" PASS_PARENT_ENVS_2="true" PROJECT_NAME="cngcrypt" TARGET_NAME="cngcrypt" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="cngcrypt" RUN_TARGET_NAME="cngcrypt">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="cngcrypt encrypt" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="451855 t.txt e.txt -" PASS_PARENT_ENVS_2="true" PROJECT_NAME="cngcrypt" TARGET_NAME="cngcrypt" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="cngcrypt" RUN_TARGET_NAME="cngcrypt">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="cngcrypt full" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="key123 t.txt e.txt d.txt" PASS_PARENT_ENVS_2="true" PROJECT_NAME="cngcrypt" TARGET_NAME="cngcrypt" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="cngcrypt" RUN_TARGET_NAME="cngcrypt">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.cngcrypt full" />
+      <item itemvalue="Application.cngcrypt encrypt" />
+      <item itemvalue="Application.cngcrypt decrypt" />
+    </list>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -223,19 +238,19 @@
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.22654584" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.22867803" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32936078" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.37821484" visible="true" weight="0.36403033" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.37821484" weight="0.36403033" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4989339" weight="0.58938247" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32936078" />
       <window_info anchor="bottom" id="Serial Monitor" order="7" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Messages" order="9" weight="0.28060672" />
+      <window_info anchor="bottom" id="Messages" order="9" visible="true" weight="0.28060672" />
       <window_info anchor="bottom" id="Terminal" order="10" sideWeight="0.4969743" weight="0.32502708" />
       <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" weight="0.38952535" />
       <window_info anchor="bottom" id="Version Control" order="12" weight="0.32936078" />
@@ -252,13 +267,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/crypto.c</url>
-          <line>109</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint enabled="true" type="CidrExceptionBreakpoint">
           <properties />
@@ -407,20 +415,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cmake-build-release/d.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="24" selection-start-column="24" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/cmake-build-release/e.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+    <entry file="file://C:/msys64/mingw64/x86_64-w64-mingw32/include/bcrypt.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="5" column="71" selection-start-line="5" selection-start-column="71" selection-end-line="5" selection-end-column="71" />
+        <state relative-caret-position="298">
+          <caret line="374" column="16" selection-start-line="374" selection-start-column="16" selection-end-line="374" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -428,13 +429,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
           <caret line="2" column="2" selection-start-line="2" selection-start-column="2" selection-end-line="2" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/msys64/mingw64/x86_64-w64-mingw32/include/bcrypt.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="298">
-          <caret line="374" column="16" selection-start-line="374" selection-start-column="16" selection-end-line="374" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -447,18 +441,32 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/crypto.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="109" column="16" selection-start-line="109" selection-start-column="16" selection-end-line="109" selection-end-column="16" />
+        <state relative-caret-position="1135">
+          <caret line="562" selection-start-line="562" selection-end-line="562" />
           <folding>
             <element signature="e#43#62#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/cmake-build-release/d.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="24" selection-start-column="24" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="9" column="30" selection-start-line="9" selection-start-column="30" selection-end-line="9" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="14" column="32" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="32" />
+        <state relative-caret-position="90">
+          <caret line="5" column="14" selection-start-line="5" selection-start-column="14" selection-end-line="5" selection-end-column="14" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
