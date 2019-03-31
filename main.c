@@ -1,6 +1,37 @@
 #include <stdio.h>
-#include <stdint.h>
 #include "crypto.h"
+
+
+void print_help(LPTSTR app) {
+    _tprintf(TEXT("cngcrypt\n"
+                  "Author: Thomas Lienbacher <lienbacher.tom@gmail.com>\n"
+                  "Small file encryption CLI using the Windows CNG API by AES-128\n"
+                  "\n"
+                  "USAGE:\n"
+                  "    %s [FLAGS] <SECRET> <INPUT> <OUTPUT>\n"
+                  "\n"
+                  "FLAGS:\n"
+                  "    -e               Encrypt input file to output\n"
+                  "    -d               Decrypt input file to output\n"
+                  "    -S               Print derived AES key and IV\n"
+                  "    -h               Prints help information and exits\n"
+                  "\n"),
+             app);
+}
+
+char find_arg(LPTSTR *argv, int argc, LPTSTR arg) {
+    for (int i = 0; i < argc; ++i) {
+        if (_tcscmp(argv[i], arg) == 0) return 1;
+    }
+
+    return 0;
+}
+
+static inline void print_hex(unsigned char *data, int len) {
+    for (int i = 0; i < len; ++i) {
+        _tprintf(TEXT("%02x"), data[i]);
+    }
+}
 
 int main(int _argc, char *_argv[]) {
     LPTSTR *szArglist;
@@ -13,31 +44,56 @@ int main(int _argc, char *_argv[]) {
     nArgs = _argc;
 #endif
 
+    char flagEncrypt = find_arg(szArglist + 1, nArgs - 1, TEXT("-e"));
+    char flagDecrypt = find_arg(szArglist + 1, nArgs - 1, TEXT("-d"));
+    char flagPrintKeys = find_arg(szArglist + 1, nArgs - 1, TEXT("-S"));
+    char flagHelp = find_arg(szArglist + 1, nArgs - 1, TEXT("-h"));
+
+    if (flagHelp) {
+        print_help(szArglist[0]);
+        return 1;
+    }
+
     if (nArgs < 5) {
-        _tprintf(TEXT("Usage: %s <key> <plaintext> <encrypted> <decrypted>\n"), szArglist[0]);
-        _tprintf(TEXT("Use - to denote no file in <plaintext> <decrypted>\n"));
+        _tprintf(TEXT("Not enough arguments supplied\n"
+                      "Use -h to see help\n"));
         return 1;
     }
 
     DWORD len = 0;
-    BYTE *keyHash = hash(&len, szArglist[1], lstrlen(szArglist[1]) * sizeof(TCHAR));
+    LPTSTR secret = szArglist[nArgs - 3];
+    BYTE *keyHash = hash(&len, secret, lstrlen(secret) * sizeof(TCHAR));
     BYTE key[16] = {0};
     data_half_collapse(key, keyHash, len);
 
-    LPTSTR plaintext = szArglist[2];
-    LPTSTR encrypted = szArglist[3];
-    LPTSTR decrypted = szArglist[4];
+    LPTSTR input = szArglist[nArgs - 2];
+    LPTSTR output = szArglist[nArgs - 1];
 
-    if (_tcscmp(plaintext, TEXT("-")) != 0) {
-        _tprintf(TEXT("Encrypting: %s => %s\n"), plaintext, encrypted);
-        UCHAR gen[BLOCK_SIZE];
-        secure_random(gen, BLOCK_SIZE);
-        encrypt(plaintext, encrypted, key, gen);
+    if (flagEncrypt) {
+        UCHAR iv[BLOCK_SIZE];
+        secure_random(iv, BLOCK_SIZE);
+
+        if (flagPrintKeys) {
+            _tprintf(TEXT("AES Key: "));
+            print_hex(key, 16);
+            _tprintf(TEXT("\nIV:      "));
+            print_hex(iv, 16);
+            _tprintf(TEXT("\n"));
+        }
+
+        _tprintf(TEXT("Encrypting: %s => %s\n"), input, output);
+        encrypt(input, output, key, iv);
     }
 
-    if (_tcscmp(decrypted, TEXT("-")) != 0) {
-        _tprintf(TEXT("Decrypting: %s => %s\n"), encrypted, decrypted);
-        decrypt(encrypted, decrypted, key);
+    if (flagDecrypt) {
+        if (flagPrintKeys) {
+            _tprintf(TEXT("AES Key:\t"));
+            print_hex(key, 16);
+            _tprintf(TEXT("\n"));
+        }
+
+        _tprintf(TEXT("Decrypting: %s => %s\n"), input, output);
+        decrypt(input, output, key);
     }
 
     free(keyHash);
