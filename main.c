@@ -5,14 +5,14 @@
 void print_help(LPTSTR app) {
     _tprintf(TEXT("cngcrypt\n"
                   "Author: Thomas Lienbacher <lienbacher.tom@gmail.com>\n"
-                  "Small file encryption CLI using the Windows CNG API by AES-128\n"
+                  "Small file encryption CLI using the Windows CNG API and AES-128\n"
                   "\n"
                   "USAGE:\n"
                   "    %s [FLAGS] <SECRET> <INPUT> <OUTPUT>\n"
                   "\n"
                   "FLAGS:\n"
-                  "    -e               Encrypt input file to output\n"
-                  "    -d               Decrypt input file to output\n"
+                  "    -e               Encrypt input file to output file\n"
+                  "    -d               Decrypt input file to output file\n"
                   "    -S               Print derived AES key and IV\n"
                   "    -h               Prints help information and exits\n"
                   "\n"),
@@ -44,18 +44,30 @@ int main(int _argc, char *_argv[]) {
     nArgs = _argc;
 #endif
 
+    if (nArgs < 2) {
+        _tprintf(TEXT("Not enough arguments supplied!\n"
+                      "Use -h to see help\n"));
+        return 1;
+    }
+
     char flagEncrypt = find_arg(szArglist + 1, nArgs - 1, TEXT("-e"));
     char flagDecrypt = find_arg(szArglist + 1, nArgs - 1, TEXT("-d"));
     char flagPrintKeys = find_arg(szArglist + 1, nArgs - 1, TEXT("-S"));
     char flagHelp = find_arg(szArglist + 1, nArgs - 1, TEXT("-h"));
+
+    if (!(flagEncrypt || flagDecrypt || flagPrintKeys || flagHelp)) {
+        _tprintf(TEXT("Wrong arguments supplied!\n"
+                      "Use -h to see help\n"));
+        return 1;
+    }
 
     if (flagHelp) {
         print_help(szArglist[0]);
         return 1;
     }
 
-    if (nArgs < 5) {
-        _tprintf(TEXT("Not enough arguments supplied\n"
+    if (flagDecrypt && flagEncrypt) {
+        _tprintf(TEXT("Can't encrypt and decrypt simultaneously!\n"
                       "Use -h to see help\n"));
         return 1;
     }
@@ -69,7 +81,14 @@ int main(int _argc, char *_argv[]) {
     LPTSTR input = szArglist[nArgs - 2];
     LPTSTR output = szArglist[nArgs - 1];
 
+    //app flag S key input output
     if (flagEncrypt) {
+        if (nArgs < (5 + flagPrintKeys)) {
+            _tprintf(TEXT("Not enough arguments supplied!\n"
+                          "Use -h to see help\n"));
+            return 1;
+        }
+
         UCHAR iv[BLOCK_SIZE];
         secure_random(iv, BLOCK_SIZE);
 
@@ -86,6 +105,12 @@ int main(int _argc, char *_argv[]) {
     }
 
     if (flagDecrypt) {
+        if (nArgs < (5 + flagPrintKeys)) {
+            _tprintf(TEXT("Not enough arguments supplied!\n"
+                          "Use -h to see help\n"));
+            return 1;
+        }
+
         if (flagPrintKeys) {
             _tprintf(TEXT("AES Key:\t"));
             print_hex(key, 16);

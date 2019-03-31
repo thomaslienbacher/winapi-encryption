@@ -29,7 +29,7 @@ static void PrintError(LPTSTR errDesc) {
                   0,
                   NULL);
 
-    _ftprintf(stderr, TEXT("\n** ERROR ** %s: %s\n"), errDesc, (LPTSTR) errMsg);
+    _ftprintf(stderr, TEXT("\nERROR %s: %s\n"), errDesc, (LPTSTR) errMsg);
     LocalFree((LPVOID) errMsg);
 }
 
