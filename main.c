@@ -3,19 +3,22 @@
 
 
 void print_help(LPTSTR app) {
-    _tprintf(TEXT("cngcrypt\n"
-                  "Author: Thomas Lienbacher <lienbacher.tom@gmail.com>\n"
-                  "Small file encryption CLI using the Windows CNG API and AES-128\n"
-                  "\n"
-                  "USAGE:\n"
-                  "    %s [FLAGS] <SECRET> <INPUT> <OUTPUT>\n"
-                  "\n"
-                  "FLAGS:\n"
-                  "    -e               Encrypt input file to output file\n"
-                  "    -d               Decrypt input file to output file\n"
-                  "    -S               Print derived AES key and IV\n"
-                  "    -h               Prints help information and exits\n"
-                  "\n"),
+    _tprintf(TEXT("cngcrypt (built on "
+                          __TIMESTAMP__
+                          ")\n"
+                          "Author: Thomas Lienbacher <lienbacher.tom@gmail.com>\n"
+                          "Small file encryption CLI using the Windows CNG API and AES-128\n"
+                          "\n"
+                          "USAGE:\n"
+                          "    %s [FLAGS] <SECRET> <INPUT> <OUTPUT>\n"
+                          "\n"
+                          "FLAGS:\n"
+                          "    -e               Encrypt input file to output file\n"
+                          "    -d               Decrypt input file to output file\n"
+                          "    -S               Print derived AES key and IV\n"
+                          "    -h               Prints help information and exits\n"
+                          "\nEncryption and decryption are mutually exclusive\n"
+                          "\n"),
              app);
 }
 
