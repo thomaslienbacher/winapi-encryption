@@ -394,11 +394,9 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
 
     BCRYPT_ALG_HANDLE hAesAlg = NULL;
     BCRYPT_KEY_HANDLE hKey = NULL;
-    DWORD cbCipherText = 0,
-            cbData = 0,
+    DWORD cbData = 0,
             cbKeyObject = 0;
-    PBYTE pbCipherText = NULL,
-            pbKeyObject = NULL,
+    PBYTE pbKeyObject = NULL,
             ivBuffer = NULL;
 
     if (BCryptOpenAlgorithmProvider(
@@ -508,27 +506,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
                 NULL,
                 ivBuffer,
                 BLOCK_SIZE,
-                NULL,
-                0,
-                &cbCipherText,
-                0)) {
-            PrintError(TEXT("Error returned by BCryptDecrypt\n"));
-            goto decrypt_exit;
-        }
-
-        pbCipherText = malloc(cbCipherText);
-        if (NULL == pbCipherText) {
-            PrintError(TEXT("Memory allocation failed\n"));
-            goto decrypt_exit;
-        }
-
-        if (BCryptDecrypt(
-                hKey,
-                in,
-                BLOCK_SIZE,
-                NULL,
-                ivBuffer,
-                BLOCK_SIZE,
                 out,
                 BLOCK_SIZE,
                 &cbData,
@@ -571,10 +548,6 @@ int decrypt(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, BYTE key[16]) {
 
     if (hKey) {
         BCryptDestroyKey(hKey);
-    }
-
-    if (pbCipherText) {
-        free(pbCipherText);
     }
 
     if (pbKeyObject) {

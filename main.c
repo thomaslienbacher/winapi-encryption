@@ -115,7 +115,7 @@ int main(int _argc, char *_argv[]) {
         }
 
         if (flagPrintKeys) {
-            _tprintf(TEXT("AES Key:\t"));
+            _tprintf(TEXT("AES Key: "));
             print_hex(key, 16);
             _tprintf(TEXT("\n"));
         }
