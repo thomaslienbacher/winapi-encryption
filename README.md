@@ -4,6 +4,8 @@ A file encryption program that uses the WinAPI library [Cryptography API: Next G
 The compiled binary name is `cngcrypt` as this is easier to remember and write.
 This program only works on Windows and can be compiled by using CMake.
 
+## WARNING: This is a toy project. It might be cryptographically insecure! Do NOT use in production!
+
 ### How to use
 `cngcrypt [FLAGS] <SECRET> <INPUT> <OUTPUT>` 
 
